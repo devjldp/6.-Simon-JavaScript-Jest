@@ -6,18 +6,103 @@
         playerMoves - array
         choices -array
     }
-    newGame()
-    addTurn()
-    showTurn()
+    newGame():
+        Reset the score to Zero
+        Clear th payerMoves array
+        Clear the currentGame array
+    addTurn():
+        Clear the playerMoves array
+        Randomly add a button Id to the currentGame array
+        Call showTurn function 
+    showTurn():
+        Step through currentGame
+        Turn on the light
+        Turn off the light
     lightOn()
-    playerTurn()
-    showScore() */
+    playerTurn():
+        check if the player move matches the computer move
+        If we are at the end of the sequence then increment the score and add another turn
+        If the moves do not match then displays an alert and start a new game.
+    showScore():
+        show the score in html */
 
 
 let game = {
-    score: 0
+    score: 0,
+    currentGame: [],
+    playerMoves: [],
+    turnNumber: 0,
+    lastButton: "",
+    turnInProgress: false,
+    choices: ["button1","button2","button3","button4"]
+}
+
+function newGame(){
+    game.score = 0;
+    game.playerMoves = [];
+    game.currentGame = [];
+    for (let circle of document.getElementsByClassName("circle")){
+        if(circle.getAttribute("data-listener") !== "true"){
+            circle.addEventListener("click", (e) => {
+                if (game.currentGame.length > 0 && !game.turnInProgress){
+                    let move = e.target.getAttribute("id");
+                    lightsOn(move);
+                    game.playerMoves.push(move);
+                    playerTurn();
+                }
+            });
+            circle.setAttribute("data-listener","true");
+        }
+    }
+    showScore();
+    addTurn();
+}
+
+function addTurn(){
+    game.playerMoves = [];
+    game.currentGame.push(game.choices[(Math.floor(Math.random()*4))]);
+    showTurns();
+};
+
+function showScore(){
+    document.getElementById("score").innerText = game.score;
+}
+
+function lightsOn(circ){
+    document.getElementById(circ).classList.add("light");
+    setTimeout(()=>{
+        document.getElementById(circ).classList.remove("light");
+    }, 400);
+}
+
+function showTurns(){
+    game.turnInProgress = true;
+    game.turnNumber = 0;
+    let turns = setInterval(() => {
+        lightsOn(game.currentGame[game.turnNumber]);
+        game.turnNumber++;
+        if (game.turnNumber >= game.currentGame.length) {
+            clearInterval(turns);
+            game.turnInProgress = false;
+        }
+    }, 800);
+}
+
+function playerTurn() {
+    let i = game.playerMoves.length -1;
+    if(game.currentGame[i] === game.playerMoves[i]) {
+        if (game.currentGame.length === game.playerMoves.length) {
+            game.score++;
+            showScore();
+            addTurn();
+        }
+    } else {
+        alert("Wrong move!");
+        newGame();
+    }
 }
 
 
 // Uso {} porque voy a exportar mas de un objeto o funcion
-module.exports = {game};
+module.exports = {game, newGame, showScore, addTurn, lightsOn, showTurns, playerTurn};
+
